@@ -1,4 +1,4 @@
-const postPredictHandler = require("./handler");
+const handlers = require("./handler");
 
 const routes = [
   {
@@ -11,7 +11,7 @@ const routes = [
   {
     path: "/predict",
     method: "POST",
-    handler: postPredictHandler,
+    handler: handlers.postPredictHandler,
     options: {
       payload: {
         allow: "multipart/form-data",
@@ -19,6 +19,11 @@ const routes = [
         maxBytes: 1000000,
       },
     },
+  },
+  {
+    path: "/bookmark",
+    method: "POST",
+    handler: handlers.bookmark,
   },
   {
     method: "GET",

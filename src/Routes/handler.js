@@ -45,31 +45,30 @@ async function postPredictHandler(request, h) {
   }
 
   const { label } = await predictClassification(model, image);
-  const id = crypto.randomUUID();
   const createdAt = new Date().toISOString();
-  const allcraft = await getDataCrafts(label);
+  const [result, id] = await getDataCrafts(label);
 
-  // cek allcraft
-  if (allcraft.error) {
+  // cek result
+  if (result.error) {
     const response = h.response({
       status: "fail",
-      message: `Error retrieving crafts: ${allcraft.error}`,
+      message: `Error retrieving crafts: ${result.error}`,
     });
     response.code(500);
     return response;
   }
 
   const data = {
-    id,
+    id_trash: id,
     result: label,
-    sugesstion: allcraft,
+    sugesstion: result,
     createdAt,
   };
 
   // upload ke database
-  if (allcraft.length !== 0) {
-    await storeData(user, allcraft);
-  }
+  // if (result.length !== 0) {
+  //   await storeData(user, result);
+  // }
 
   const response = h.response({
     status: "success",
@@ -79,6 +78,23 @@ async function postPredictHandler(request, h) {
   response.code(201);
 
   return response;
+}
+
+
+async function bookmark(request, h) {
+  const { user } = request.payload;
+  const { craft } = request.payload;
+
+  await storeData(user, craft);
+
+  const response = h.response({
+    status: "success",
+    message: "Bookmark has added",
+  });
+  response.code(201);
+
+  return response
+
 }
 
 async function auth(id, token) {
@@ -129,11 +145,11 @@ async function getDataCrafts(label) {
     const [result] = await conn.query(query2, [id]);
 
     await conn.release();
-    return result;
+    return [result, id];
   } catch (err) {
     console.error("Error in getAllCraft:", err.message);
     return { error: err.message };
   }
 }
 
-module.exports = postPredictHandler;
+module.exports = {postPredictHandler, bookmark};
