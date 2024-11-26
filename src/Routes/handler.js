@@ -154,4 +154,105 @@ async function getDataCrafts(label) {
   }
 }
 
-module.exports = {postPredictHandler, bookmark};
+async function indexTrash(request, h) {
+  try {
+    if (!pool) {
+      pool = await createPool(); // Inisialisasi pool jika belum ada
+    }
+
+    const conn = await pool.getConnection();
+
+    const query = `SELECT * FROM Trash;`;
+    const [result] = await conn.query(query);
+
+    await conn.release();
+
+    const response = h.response({
+      status: "success",
+      result,
+    });
+    response.code(200);
+  
+    return response;
+  } catch (err) {
+    console.error("Error in getAllCraft:", err.message);
+    return { error: err.message };
+  }
+}
+
+async function indexCrafts(request, h) {
+  try {
+    if (!pool) {
+      pool = await createPool(); // Inisialisasi pool jika belum ada
+    }
+
+    const { label } = request.params
+
+    const conn = await pool.getConnection();
+
+    const query = `SELECT * FROM Trash WHERE type = ?;`;
+    const [rows] = await conn.query(query, [label]);
+
+    const id = rows[0]?.ID;
+    const treatment = rows[0]?.treatment;
+
+    const query2 = `
+        SELECT * 
+        FROM Trash_Crafts AS TC
+        JOIN Crafts AS C ON TC.craft_id = C.id
+        WHERE TC.trash_id = ?;
+    `;
+    const [result] = await conn.query(query2, [id]);
+
+    await conn.release();
+
+
+    const response = h.response({
+      status: "success",
+      result,
+    });
+    response.code(200);
+  
+    return response;
+  } catch (err) {
+    console.error("Error in getAllCraft:", err.message);
+    return { error: err.message };
+  }
+}
+
+async function indexCraft(request, h) {
+  try {
+    if (!pool) {
+      pool = await createPool(); // Inisialisasi pool jika belum ada
+    }
+
+    const { id } = request.params
+
+    const conn = await pool.getConnection();
+
+    const query2 = `
+        SELECT * 
+        FROM Trash_Crafts AS TC
+        JOIN Crafts AS C ON TC.craft_id = C.id
+        WHERE TC.ID = ?;
+    `;
+    const [result] = await conn.query(query2, [id]);
+
+    await conn.release();
+
+
+    const response = h.response({
+      status: "success",
+      result,
+    });
+    response.code(200);
+  
+    return response;
+  } catch (err) {
+    console.error("Error in getAllCraft:", err.message);
+    return { error: err.message };
+  }
+}
+
+
+module.exports = {postPredictHandler, bookmark, indexTrash, indexCrafts, indexCraft};

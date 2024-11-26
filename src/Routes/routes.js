@@ -9,6 +9,21 @@ const routes = [
     },
   },
   {
+    method: "GET",
+    path: "/trashes",
+    handler: handlers.indexTrash,
+  },
+  {
+    method: "GET",
+    path: "/crafts/{label}",
+    handler: handlers.indexCrafts,
+  },
+  {
+    method: "GET",
+    path: "/craft/{id}",
+    handler: handlers.indexCraft,
+  },
+  {
     path: "/predict",
     method: "POST",
     handler: handlers.postPredictHandler,
