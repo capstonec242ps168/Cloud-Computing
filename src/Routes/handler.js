@@ -46,7 +46,7 @@ async function postPredictHandler(request, h) {
 
   const { label } = await predictClassification(model, image);
   const createdAt = new Date().toISOString();
-  const [result, id] = await getDataCrafts(label);
+  const [result, id, treatment] = await getDataCrafts(label);
 
   // cek result
   if (result.error) {
@@ -61,6 +61,7 @@ async function postPredictHandler(request, h) {
   const data = {
     id_trash: id,
     result: label,
+    treatment,
     sugesstion: result,
     createdAt,
   };
@@ -131,10 +132,11 @@ async function getDataCrafts(label) {
 
     const conn = await pool.getConnection();
 
-    const query = `SELECT id FROM Trash WHERE type = ?;`;
+    const query = `SELECT * FROM Trash WHERE type = ?;`;
     const [rows] = await conn.query(query, [label]);
 
-    const id = rows[0]?.id;
+    const id = rows[0]?.ID;
+    const treatment = rows[0]?.treatment;
 
     const query2 = `
         SELECT * 
@@ -145,7 +147,7 @@ async function getDataCrafts(label) {
     const [result] = await conn.query(query2, [id]);
 
     await conn.release();
-    return [result, id];
+    return [result, id, treatment];
   } catch (err) {
     console.error("Error in getAllCraft:", err.message);
     return { error: err.message };

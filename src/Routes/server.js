@@ -9,7 +9,7 @@ const InputError = require("../Exceptions/InputError");
 
 const init = async () => {
   const server = Hapi.server({
-    port: 3001,
+    port: 3000,
     host: "localhost",
     routes: {
       cors: {
@@ -30,7 +30,9 @@ const init = async () => {
     if (response instanceof InputError) {
       const newResponse = h.response({
         status: "fail",
-        message: `Terjadi kesalahan dalam melakukan prediksi  ${response.message || "Detail error tidak tersedia"}`,
+        message: `Terjadi kesalahan dalam melakukan prediksi  ${
+          response.message || "Detail error tidak tersedia"
+        }`,
       });
 
       // Make sure statusCode is an integer, default to 400 if undefined
