@@ -12,7 +12,7 @@ async function postPredictHandler(request, h) {
   const { token } = request.payload;
   const { model } = request.server.app;
 
-  // validasi input 
+  // validasi input
   if (!image || !user || !token) {
     const response = h.response({
       status: "fail",
@@ -22,8 +22,8 @@ async function postPredictHandler(request, h) {
     return response;
   }
 
-  // auth 
-  if (await auth(user, token) === 0 ) {
+  // auth
+  if ((await auth(user, token)) === 0) {
     const response = h.response({
       status: "failed",
       message: "User unauthorized.",
@@ -33,7 +33,6 @@ async function postPredictHandler(request, h) {
   }
 
   const imageSize = Buffer.byteLength(image, "base64");
-
 
   if (imageSize > 1000000) {
     const response = h.response({
@@ -81,10 +80,29 @@ async function postPredictHandler(request, h) {
   return response;
 }
 
-
 async function bookmark(request, h) {
   const { user } = request.payload;
+  const { token } = request.payload;
   const { craft } = request.payload;
+
+  if (!craft || !user || !token) {
+    const response = h.response({
+      status: "fail",
+      message: "Invalid input. Missing required fields.",
+    });
+    response.code(400);
+    return response;
+  }
+
+  // auth
+  if ((await auth(user, token)) === 0) {
+    const response = h.response({
+      status: "failed",
+      message: "User unauthorized.",
+    });
+    response.code(401);
+    return response;
+  }
 
   await storeData(user, craft);
 
@@ -94,8 +112,7 @@ async function bookmark(request, h) {
   });
   response.code(201);
 
-  return response
-
+  return response;
 }
 
 async function auth(id, token) {
@@ -172,7 +189,7 @@ async function indexTrash(request, h) {
       result,
     });
     response.code(200);
-  
+
     return response;
   } catch (err) {
     console.error("Error in getAllCraft:", err.message);
@@ -186,7 +203,7 @@ async function indexCrafts(request, h) {
       pool = await createPool(); // Inisialisasi pool jika belum ada
     }
 
-    const { label } = request.params
+    const { label } = request.params;
 
     const conn = await pool.getConnection();
 
@@ -206,13 +223,12 @@ async function indexCrafts(request, h) {
 
     await conn.release();
 
-
     const response = h.response({
       status: "success",
       result,
     });
     response.code(200);
-  
+
     return response;
   } catch (err) {
     console.error("Error in getAllCraft:", err.message);
@@ -226,7 +242,7 @@ async function indexCraft(request, h) {
       pool = await createPool(); // Inisialisasi pool jika belum ada
     }
 
-    const { id } = request.params
+    const { id } = request.params;
 
     const conn = await pool.getConnection();
 
@@ -240,13 +256,12 @@ async function indexCraft(request, h) {
 
     await conn.release();
 
-
     const response = h.response({
       status: "success",
       result,
     });
     response.code(200);
-  
+
     return response;
   } catch (err) {
     console.error("Error in getAllCraft:", err.message);
@@ -254,5 +269,72 @@ async function indexCraft(request, h) {
   }
 }
 
+async function historyByUserId(request, h) {
+  try {
+    if (!pool) {
+      pool = await createPool(); // Menginisialisasi pool hanya sekali
+    }
 
-module.exports = {postPredictHandler, bookmark, indexTrash, indexCrafts, indexCraft};
+    const { id } = request.params;
+
+    const conn = await pool.getConnection();
+
+    // Query untuk mendapatkan data histori berdasarkan user_id
+    const query = `
+      SELECT 
+        H.ID AS history_id,
+        H.create_at,
+        U.username,
+        U.email,
+        T.type AS trash_type,
+        C.name AS craft_name,
+        C.tools_materials,
+        C.step
+      FROM Histories AS H
+      JOIN Users AS U ON H.user_id = U.ID
+      JOIN Trash_Crafts AS TC ON H.trash_craft_id = TC.ID
+      JOIN Trash AS T ON TC.trash_id = T.ID
+      JOIN Crafts AS C ON TC.craft_id = C.ID
+      WHERE H.user_id = ?;
+    `;
+
+    const [result] = await conn.query(query, [id]);
+
+    await conn.release();
+
+    if (result.length === 0) {
+      const response = h.response({
+        status: "fail",
+        message: `No history found for user_id: ${id}`,
+      });
+      response.code(404);
+      return response;
+    }
+
+    const response = h.response({
+      status: "success",
+      result,
+    });
+    response.code(200);
+
+    return response;
+  } catch (err) {
+    console.error("Error in historyByUserId:", err.message);
+    const response = h.response({
+      status: "fail",
+      message: err.message,
+    });
+    response.code(500);
+
+    return response;
+  }
+}
+
+module.exports = {
+  postPredictHandler,
+  bookmark,
+  indexTrash,
+  indexCrafts,
+  indexCraft,
+  historyByUserId,
+};
