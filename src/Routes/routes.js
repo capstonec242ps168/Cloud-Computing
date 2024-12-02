@@ -26,7 +26,7 @@ const routes = [
   {
     method: "GET",
     path: "/craft/{id}",
-    handler: handlers.indexCraft,
+    handler: handlers.indexCrafts,
   },
   {
     path: "/predict",
