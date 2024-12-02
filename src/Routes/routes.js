@@ -9,6 +9,11 @@ const routes = [
     },
   },
   {
+    method: 'POST',
+    path: '/auth',
+    handler: handlers.auth,
+  },
+  {
     method: "GET",
     path: "/trashes",
     handler: handlers.indexTrash,

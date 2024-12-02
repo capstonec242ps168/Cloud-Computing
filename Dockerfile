@@ -9,6 +9,6 @@ COPY . .
 
 ENV GOOGLE_APPLICATION_CREDENTIALS="/app/credentials.json"
 
-EXPOSE 8080
+EXPOSE 3000
 
 CMD ["npm", "run", "start"]

@@ -3,6 +3,7 @@ const predictClassification = require("../Service/inferenceService");
 const storeData = require("../Service/storeData");
 const createPool = require("../Service/createPool");
 const mysql = require("mysql2/promise");
+const verifyAndRegister = require('./services/authServices');
 const { Connector } = require("@google-cloud/cloud-sql-connector");
 let pool;
 
@@ -98,29 +99,51 @@ async function bookmark(request, h) {
 
 }
 
-async function auth(id, token) {
+// async function auth(id, token) {
+//   try {
+//     if (!pool) {
+//       pool = await createPool(); // Inisialisasi pool jika belum ada
+//     }
+
+//     const conn = await pool.getConnection();
+
+//     const query = `SELECT token FROM Users WHERE id = ?;`;
+//     const [rows] = await conn.query(query, [id]);
+
+//     const getToken = rows[0]?.token;
+
+//     if (getToken !== token) {
+//       await conn.release();
+//       return 0; // Tidak sah
+//     }
+
+//     await conn.release();
+//     return 1; // Sah
+//   } catch (err) {
+//     console.error("Error in auth:", err.message);
+//     return { error: err.message };
+//   }
+// }
+
+async function auth(request, h) {
   try {
-    if (!pool) {
-      pool = await createPool(); // Inisialisasi pool jika belum ada
+    const { token, email } = request.payload;
+
+    // Panggil verifyAndRegister untuk memverifikasi token dan mendaftarkan pengguna
+    const result = await verifyAndRegister(token, email);
+
+    if (result.status === 'User already registered') {
+      return h.response({ status: 'User already registered' }).code(200);
     }
 
-    const conn = await pool.getConnection();
-
-    const query = `SELECT token FROM Users WHERE id = ?;`;
-    const [rows] = await conn.query(query, [id]);
-
-    const getToken = rows[0]?.token;
-
-    if (getToken !== token) {
-      await conn.release();
-      return 0; // Tidak sah
+    if (result.status === 'User registered successfully') {
+      return h.response({ status: 'User registered successfully' }).code(201);
     }
 
-    await conn.release();
-    return 1; // Sah
+    return h.response({ status: result.status, message: result.error }).code(500);
   } catch (err) {
-    console.error("Error in auth:", err.message);
-    return { error: err.message };
+    console.error('Error in auth:', err.message);
+    return h.response({ status: 'Error', message: err.message }).code(500);
   }
 }
 
@@ -315,4 +338,4 @@ async function historyByUserId(request, h) {
   }
 }
 
-module.exports = {postPredictHandler, bookmark, indexTrash, indexCrafts, indexCraft, historyByUserId};
+module.exports = {postPredictHandler, bookmark, indexTrash, indexCrafts, indexCraft, historyByUserId, auth};
