@@ -3,7 +3,7 @@ const predictClassification = require("../Service/inferenceService");
 const storeData = require("../Service/storeData");
 const createPool = require("../Service/createPool");
 const mysql = require("mysql2/promise");
-const verifyAndRegister = require('./services/authServices');
+const verifyAndRegister = require('./Service/authService');
 const { Connector } = require("@google-cloud/cloud-sql-connector");
 let pool;
 
