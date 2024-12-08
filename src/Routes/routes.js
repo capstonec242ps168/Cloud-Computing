@@ -8,15 +8,35 @@ const routes = [
       return "Hello World!";
     },
   },
-  {
-    method: 'POST',
-    path: '/auth',
-    handler: handlers.auth,
-  },
+  // {
+  //   method: "GET",
+  //   path: "/auth/google",
+  //   handler: handlers.login,
+  // },
+  // {
+  //   method: "GET",
+  //   path: "/auth/google/callback",
+  //   handler: handlers.loginCallback
+  // },
+  // {
+  //   method: "POST",
+  //   path: "/auth",
+  //   handler: handlers.loginCallback1
+  // },
+  // {
+  //   method: "POST",
+  //   path: "/logout",
+  //   handler: handlers.logout
+  // },
   {
     method: "GET",
     path: "/trashes",
     handler: handlers.indexTrash,
+    // options: {
+    //   pre: [
+    //     { method: handlers.accessValidation }
+    // ]
+    // }
   },
   {
     method: "GET",
@@ -26,7 +46,7 @@ const routes = [
   {
     method: "GET",
     path: "/craft/{id}",
-    handler: handlers.indexCrafts,
+    handler: handlers.indexCraft,
   },
   {
     path: "/predict",
@@ -36,7 +56,7 @@ const routes = [
       payload: {
         allow: "multipart/form-data",
         multipart: true,
-        maxBytes: 1000000,
+        maxBytes: 10000000,
       },
     },
   },
@@ -46,9 +66,14 @@ const routes = [
     handler: handlers.bookmark,
   },
   {
-    method: 'GET',
-    path: '/history/{id}',
+    method: "GET",
+    path: "/history/{id}/{uid}",
     handler: handlers.historyByUserId,
+  },
+  {
+    method: "POST",
+    path: "/auth",
+    handler: handlers.firebaseLogin,
   },
 ];
 
