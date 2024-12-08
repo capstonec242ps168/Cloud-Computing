@@ -64,3 +64,10 @@ model Tokens {
 
   @@index([user_id], map: "user_id")
 }
+
+model News {
+  id      Int     @id @default(autoincrement())
+  title   String  @db.VarChar(255)
+  content String  @db.Text
+  image   String? @db.VarChar(255)
+}

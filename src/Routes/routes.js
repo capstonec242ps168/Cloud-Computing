@@ -75,6 +75,16 @@ const routes = [
     path: "/auth",
     handler: handlers.firebaseLogin,
   },
+  {
+    method: "GET",
+    path: "/news",
+    handler: handlers.indexNews,
+  },
+  {
+    method: "GET",
+    path: "/news/{id}",
+    handler: handlers.indexNewsID,
+  },
 ];
 
 module.exports = routes;

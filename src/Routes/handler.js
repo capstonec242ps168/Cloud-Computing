@@ -774,6 +774,65 @@ async function historyByUserId(request, h) {
   }
 }
 
+async function indexNews(request, h) {
+  try {
+    const result = await prisma.News.findMany();
+
+    const response = h.response({
+      status: "success",
+      result,
+    });
+    response.code(200);
+
+    return response;
+  } catch (err) {
+    console.error("Error in indexNews:", err.message);
+    return {
+      status: "fail",
+      message: "Failed to retrieve news.",
+      error: err.message,
+    };
+  }
+}
+
+async function indexNewsID(request, h) {
+  try {
+    const { id } = request.params;
+
+    const result = await prisma.News.findUnique({
+      where: {
+        id: Number(id), 
+      },
+    });
+
+    if (!result) {
+      return h
+        .response({
+          status: "fail",
+          message: `News with ID ${id} not found`,
+        })
+        .code(404);
+    }
+
+    return h
+      .response({
+        status: "success",
+        data: result,
+      })
+      .code(200);
+  } catch (err) {
+
+    console.error("Error in indexNewsID:", err.message);
+    return h
+      .response({
+        status: "error",
+        message: "An internal server error occurred",
+      })
+      .code(500);
+  }
+}
+
+
 module.exports = {
   postPredictHandler,
   bookmark,
@@ -786,5 +845,7 @@ module.exports = {
   // loginCallback1, 
   // loginCallback, 
   // accessValidation,
-  firebaseLogin
+  firebaseLogin,
+  indexNews,
+  indexNewsID
 };
