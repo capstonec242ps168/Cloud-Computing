@@ -2,7 +2,6 @@
 require("dotenv").config();
 
 const Hapi = require("@hapi/hapi");
-
 const routes = require("./routes");
 const loadModel = require("../Service/loadModel");
 const InputError = require("../Exceptions/InputError");
@@ -26,7 +25,6 @@ const init = async () => {
   server.ext("onPreResponse", function (request, h) {
     const response = request.response;
 
-    // Handle InputError
     if (response instanceof InputError) {
       const newResponse = h.response({
         status: "fail",
@@ -35,12 +33,10 @@ const init = async () => {
         }`,
       });
 
-      // Make sure statusCode is an integer, default to 400 if undefined
       newResponse.code(response.statusCode || 400);
       return newResponse;
     }
 
-    // Handle Boom errors (e.g. 404, 500, etc.)
     if (response.isBoom) {
       const newResponse = h.response({
         status: "fail",
@@ -49,7 +45,6 @@ const init = async () => {
           "Terjadi kesalahan dalam melakukan prediksi1",
       });
 
-      // Ensure statusCode is always an integer, default to 500 if undefined
       newResponse.code(response.output.statusCode || 500);
       return newResponse;
     }
